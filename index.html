@@ -5,11 +5,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Evenly — fair group work, tracked</title>
-<meta name="description" content="Evenly is a group assignment tracker for students: a shared task board, deadline alerts, and a balance strip showing each member's real share of the completed work against an equal split.">
+<meta name="description" content="Evenly is a group assignment tracker for students: a shared task board, deadline alerts, and a chart of each member's share of the completed work against an equal split.">
 <meta name="robots" content="index, follow">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Evenly — fair group work, tracked">
-<meta property="og:description" content="Evenly is a group assignment tracker for students: a shared task board, deadline alerts, and a balance strip showing each member's real share of the completed work against an equal split.">
+<meta property="og:description" content="Evenly is a group assignment tracker for students: a shared task board, deadline alerts, and a chart of each member's share of the completed work against an equal split.">
 <meta name="twitter:card" content="summary">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'><rect width='40' height='40' fill='%23121317'/><rect x='7' y='14' width='26' height='4' fill='%231F3BEB'/><rect x='7' y='23' width='16' height='4' fill='%23FFFFFF'/></svg>">
 
@@ -29,6 +29,7 @@
   --accent:#1F3BEB;
   --accent-ink:#FFFFFF;
   --accent-wash:#EAEDFE;
+  --chart:#1F3BEB;
   --late:#C0301B;
   --late-wash:#FBEAE7;
   --soon:#9A6000;
@@ -49,6 +50,8 @@
     --accent:#7D8FFF;
     --accent-ink:#0B0C10;
     --accent-wash:#1A1E33;
+  --chart:#6E82F5;
+    --chart:#6E82F5;
     --late:#F08A77;
     --late-wash:#2E1A17;
     --soon:#E3B45F;
@@ -124,25 +127,62 @@ button{cursor:pointer}
 .btn-solid{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:600}
 .btn-solid:hover{filter:brightness(1.1);color:var(--accent-ink)}
 
-/* ---------- persistent balance strip ---------- */
-.balance{border-top:1px solid var(--ink);border-bottom:1px solid var(--rule);padding-block:11px 12px}
-.balance-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin-bottom:9px}
-.bal-track{display:flex;width:100%;height:26px;gap:2px}
-.bal-seg{
-  position:relative;min-width:3px;display:flex;align-items:center;justify-content:center;
-  background:var(--accent-wash);border-bottom:2px solid var(--accent);
-  transition:flex-grow .4s ease;overflow:hidden;
+.secthead{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin-bottom:9px}
+
+.axis{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;padding-block:16px 0}
+
+/* ---------- fair-share column chart ---------- */
+.chart{padding-block:22px 4px;position:relative;max-width:1040px}
+.plotwrap{position:relative;height:250px;border-bottom:1px solid var(--ink)}
+.evenline{
+  position:absolute;left:0;right:0;border-top:1px dashed var(--ink-2);
+  pointer-events:none;z-index:2;
 }
-.bal-seg.zero{background:var(--paper-2);border-bottom-color:var(--rule)}
-.bal-seg span{
-  font-family:var(--mono);font-size:10.5px;font-weight:600;color:var(--ink);
-  white-space:nowrap;padding:0 4px;
+/* the line's value lives in the axis note above — a chip here collides with tall bars */
+.evenline b{display:none}
+.cols{display:grid;height:100%;align-items:end;gap:0 10px}
+.col{position:relative;height:100%}
+.bar{
+  position:absolute;left:0;right:0;bottom:0;margin-inline:auto;max-width:104px;
+  background:var(--chart);border-radius:4px 4px 0 0;transition:height .45s ease;min-height:2px;
 }
-.bal-seg.zero span{color:var(--ink-3)}
-.bal-legend{display:flex;justify-content:space-between;gap:12px;margin-top:7px}
+.col.nil .bar{background:var(--rule);min-height:3px;border-radius:0}
+.col .v{
+  position:absolute;left:0;right:0;text-align:center;font-family:var(--mono);
+  font-size:14px;font-weight:600;font-variant-numeric:tabular-nums;color:var(--ink);
+  transition:bottom .45s ease;
+}
+.col.nil .v{color:var(--ink-3)}
+.col:hover .bar{filter:brightness(1.12)}
+.names{display:grid;gap:0 10px;padding-top:10px}
+.names div{text-align:center;min-width:0}
+.names .nm{font-size:12.5px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.names .dl{font-family:var(--mono);font-size:10.5px;color:var(--ink-3);margin-top:3px}
+.names .dl.under{color:var(--late)}
+.names .dl.over{color:var(--chart)}
+.tip{
+  position:absolute;z-index:9;pointer-events:none;opacity:0;transition:opacity .12s;
+  background:var(--ink);color:var(--paper);padding:8px 11px;border-radius:3px;
+  font-family:var(--mono);font-size:11.5px;line-height:1.6;white-space:nowrap;
+  transform:translate(-50%,-100%);
+}
+.tip.on{opacity:1}
+.tip b{color:var(--paper);font-weight:600}
+
+/* ---------- table view (also the accessible fallback for the chart) ---------- */
+.tblwrap{overflow-x:auto;margin-top:26px}
+.tbl{width:100%;min-width:440px;border-collapse:collapse}
+.tbl caption{text-align:left;padding-bottom:9px}
+.tbl th,.tbl td{text-align:right;padding:9px 0;border-bottom:1px solid var(--rule-2);font-size:13px}
+.tbl th+th,.tbl td+td{padding-left:14px}
+.tbl th:first-child,.tbl td:first-child{text-align:left}
+.tbl thead th{border-bottom:1px solid var(--rule);font-family:var(--mono);font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-3);font-weight:500}
+.tbl td{font-family:var(--mono);font-variant-numeric:tabular-nums;color:var(--ink-2)}
+.tbl td:first-child{font-family:var(--sans);color:var(--ink);font-weight:500}
+.tbl td.share{color:var(--ink);font-weight:600}
 
 /* ---------- tabs: inline on desktop, fixed bottom bar on phones ---------- */
-.tabs{display:flex;gap:0;border-bottom:1px solid var(--rule)}
+.tabs{display:flex;gap:0;border-top:1px solid var(--ink);border-bottom:1px solid var(--rule)}
 .tabs button{
   background:none;border:none;border-bottom:2px solid transparent;
   padding:13px 2px;margin-right:26px;
@@ -237,21 +277,6 @@ button{cursor:pointer}
 .kill:hover{opacity:1;color:var(--late)}
 .blank{padding:46px 0;text-align:center;color:var(--ink-3);font-size:13.5px}
 
-/* ---------- fair share: a measuring scale ---------- */
-.axis{display:flex;justify-content:space-between;padding-block:14px 0}
-.scale{list-style:none;margin:0;padding:0}
-.sr{display:grid;grid-template-columns:minmax(210px,1.15fr) minmax(0,2.6fr) auto;gap:18px;align-items:center;padding:14px 0;border-bottom:1px solid var(--rule-2)}
-.sr .nm{font-size:14px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.sr .sub{font-size:11px;color:var(--ink-3);margin-top:3px;font-family:var(--mono);white-space:nowrap}
-.gauge{position:relative;height:22px;border-left:1px solid var(--rule)}
-.gauge .fill{position:absolute;left:0;top:4px;bottom:4px;background:var(--accent);transition:width .4s ease}
-.sr.below .gauge .fill{background:var(--under)}
-.gauge .even{position:absolute;left:50%;top:-2px;bottom:-2px;border-left:1px dashed var(--ink-2)}
-.sr .pct{font-family:var(--mono);font-size:16px;font-weight:600;font-variant-numeric:tabular-nums;text-align:right;min-width:52px}
-.sr .delta{font-family:var(--mono);font-size:10.5px;color:var(--ink-3);text-align:right;margin-top:2px;white-space:nowrap}
-.sr.above .delta{color:var(--accent)}
-.sr.below .delta{color:var(--under)}
-
 /* ---------- roster ---------- */
 .roster{padding-block:16px}
 .chips{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:12px}
@@ -308,9 +333,14 @@ button{cursor:pointer}
   .mast{padding-block:18px 12px}
   .projrow{flex:1 1 100%}
   .projrow input{flex:1;width:auto}
-  /* narrow segments cannot hold a name; leave them as empty slots */
-  .bal-seg.zero span{display:none}
-  .bal-seg span{font-size:10px}
+  /* a 250px plot is too tall once the bottom bar is in play */
+  .plotwrap{height:190px}
+  .col .v{font-size:12px}
+  .names .nm{font-size:11px}
+  .names .dl{font-size:9.5px}
+  .cols,.names{gap:0 6px}
+  .tbl th,.tbl td{font-size:11.5px;padding:8px 0}
+  .tbl th+th,.tbl td+td{padding-left:10px}
 
   /* bottom bar on phones */
   .app{padding-bottom:calc(76px + env(safe-area-inset-bottom, 0px))}
@@ -347,18 +377,6 @@ button{cursor:pointer}
       <button class="btn" id="reset" type="button">Reset</button>
     </div>
   </header>
-
-  <section class="balance" aria-label="Share of completed work">
-    <div class="balance-head">
-      <span class="lbl">Share of completed work</span>
-      <span class="lbl" id="evennote"></span>
-    </div>
-    <div class="bal-track" id="baltrack"></div>
-    <div class="bal-legend">
-      <span class="lbl" id="balleft"></span>
-      <span class="lbl" id="balright"></span>
-    </div>
-  </section>
 
   <nav class="tabs" id="tabs" role="tablist" aria-label="Sections">
     <button type="button" role="tab" data-view="board" aria-selected="true">
@@ -416,12 +434,25 @@ button{cursor:pointer}
   <!-- FAIR SHARE -->
   <div data-view-panel="share">
     <div class="axis">
-      <span class="lbl">Member</span>
+      <span class="lbl">Share of completed work</span>
       <span class="lbl" id="axisnote"></span>
     </div>
-    <ul class="scale" id="scale"></ul>
+    <p class="blank" id="scaleblank" hidden>Add group members to see how the work splits.</p>
+    <div class="chart">
+      <div class="plotwrap">
+        <div class="evenline" id="evenline"><b id="evenlabel"></b></div>
+        <div class="cols" id="cols"></div>
+      </div>
+      <div class="names" id="names"></div>
+      <div class="tip" id="tip"></div>
+    </div>
+    <div class="tblwrap">
+      <table class="tbl" id="tbl">
+        <caption class="lbl">The same figures as a table</caption>
+      </table>
+    </div>
     <div class="roster">
-      <div class="balance-head"><span class="lbl">Group members</span>
+      <div class="secthead"><span class="lbl">Group members</span>
         <button class="btn" id="copyreport" type="button">Copy report</button>
       </div>
       <div class="chips" id="chips"></div>
@@ -576,30 +607,84 @@ button{cursor:pointer}
     });
   }
 
-  /* ---------- the strip that stays put across tabs ---------- */
-  function renderBalance(){
-    var rows = shares(), grand = rows.length ? rows[0].grand : 0;
-    var track = document.getElementById("baltrack");
-    var even = state.members.length ? 100/state.members.length : 0;
-    document.getElementById("evennote").textContent =
-      state.members.length ? "Equal share = " + Math.round(even) + "%" : "";
+  /* ---------- fair share as a column chart against an equal-share line ---------- */
+  function renderChart(){
+    var rows = shares();
+    var n = state.members.length;
+    var even = n ? 100/n : 0;
+    var cols = document.getElementById("cols");
+    var names = document.getElementById("names");
+    var tbl = document.getElementById("tbl");
+    var line = document.getElementById("evenline");
 
-    if(!state.members.length){ track.innerHTML = ""; return; }
-    track.innerHTML = rows.map(function(r){
-      var zero = r.pct < 0.5;
-      // grow by share so the strip reads as one whole divided between people
-      var grow = zero ? 0.35 : Math.max(0.5, r.pct/ (even || 1));
-      return '<div class="bal-seg'+(zero?' zero':'')+'" style="flex:'+grow.toFixed(3)+' 1 0" '+
-             'title="'+esc(r.m.name)+' — '+Math.round(r.pct)+'%">'+
-             '<span>'+esc(firstName(r.m.name))+(zero?'':' '+Math.round(r.pct)+'%')+'</span></div>';
+    document.getElementById("axisnote").textContent =
+      n ? "Dashed line = equal share for " + n + " members = " + Math.round(even) + "%" : "";
+
+    if(!n){
+      cols.innerHTML = ""; names.innerHTML = "";
+      line.style.display = "none";
+      tbl.innerHTML = '<caption class="lbl">The same figures as a table</caption>';
+      document.getElementById("scaleblank").hidden = false;
+      return;
+    }
+    document.getElementById("scaleblank").hidden = true;
+    line.style.display = "";
+
+    var maxPct = Math.max.apply(null, rows.map(function(r){ return r.pct; }));
+    // headroom above the tallest column so its value label never collides with the top
+    var top = Math.max(Math.ceil(Math.max(maxPct*1.18, even*2)/10)*10, 10);
+    var track = "repeat("+n+",minmax(0,1fr))";
+    cols.style.gridTemplateColumns = track;
+    names.style.gridTemplateColumns = track;
+    line.style.bottom = (even/top*100).toFixed(2)+"%";
+    document.getElementById("evenlabel").textContent = "Equal share " + Math.round(even) + "%";
+
+    cols.innerHTML = rows.map(function(r,i){
+      var h = (r.pct/top*100);
+      var nil = r.pct < 0.5;
+      return '<div class="col'+(nil?' nil':'')+'" data-i="'+i+'">'+
+             '<div class="v" style="bottom:calc('+h.toFixed(2)+'% + 7px)">'+Math.round(r.pct)+'%</div>'+
+             '<div class="bar" style="height:'+h.toFixed(2)+'%"></div></div>';
     }).join("");
 
-    var sorted = rows.slice().sort(function(a,b){ return b.pct-a.pct; });
-    var hi = sorted[0], lo = sorted[sorted.length-1];
-    document.getElementById("balleft").textContent =
-      grand ? "Most: " + firstName(hi.m.name) + " " + Math.round(hi.pct) + "%" : "Nothing completed yet";
-    document.getElementById("balright").textContent =
-      grand ? "Least: " + firstName(lo.m.name) + " " + Math.round(lo.pct) + "%" : "";
+    names.innerHTML = rows.map(function(r){
+      var d = r.pct - even, cls = "", txt = "not started";
+      if(r.grand > 0){
+        if(d > 2){ cls="over";  txt = "+"+Math.round(d)+" over"; }
+        else if(d < -2){ cls="under"; txt = Math.round(d)+" under"; }
+        else { txt = "on the line"; }
+      }
+      return '<div><div class="nm">'+esc(r.m.name)+'</div>'+
+             '<div class="dl '+cls+'">'+esc(txt)+'</div></div>';
+    }).join("");
+
+    tbl.innerHTML = '<caption class="lbl">The same figures as a table</caption>'+
+      '<thead><tr><th>Member</th><th>Done</th><th>Points done</th><th>Open</th><th>Points open</th><th>Share</th></tr></thead>'+
+      '<tbody>'+rows.map(function(r){
+        return '<tr><td>'+esc(r.m.name)+'</td><td>'+r.dc+'</td><td>'+r.w+'</td>'+
+               '<td>'+r.oc+'</td><td>'+r.ow+'</td><td class="share">'+Math.round(r.pct)+'%</td></tr>';
+      }).join("")+'</tbody>';
+  }
+
+  var tipEl, tipRows;
+  function bindChartHover(){
+    tipEl = document.getElementById("tip");
+    var cols = document.getElementById("cols");
+    cols.addEventListener("mousemove", function(e){
+      var c = e.target.closest(".col");
+      if(!c){ tipEl.classList.remove("on"); return; }
+      var r = shares()[+c.getAttribute("data-i")];
+      if(!r){ return; }
+      var box = c.getBoundingClientRect();
+      var host = document.querySelector(".chart").getBoundingClientRect();
+      tipEl.innerHTML = '<b>'+esc(r.m.name)+'</b><br>'+
+        Math.round(r.pct)+'% of completed work<br>'+
+        r.dc+' done · '+r.w+' pts<br>'+ r.oc+' open · '+r.ow+' pts';
+      tipEl.style.left = (box.left - host.left + box.width/2)+"px";
+      tipEl.style.top  = (box.top  - host.top  - 8)+"px";
+      tipEl.classList.add("on");
+    });
+    cols.addEventListener("mouseleave", function(){ tipEl.classList.remove("on"); });
   }
 
   function renderNotices(){
@@ -633,6 +718,11 @@ button{cursor:pointer}
       var p = rows.map(function(r){ return r.pct; });
       gap = Math.max.apply(null,p) - Math.min.apply(null,p);
     }
+    var sorted = rows.slice().sort(function(a,b){ return b.pct-a.pct; });
+    var span = rows.length
+      ? firstName(sorted[0].m.name)+" "+Math.round(sorted[0].pct)+"% vs "+
+        firstName(sorted[sorted.length-1].m.name)+" "+Math.round(sorted[sorted.length-1].pct)+"%"
+      : "no completed work yet";
     function fig(k,v,n,alert){
       return '<div class="fig'+(alert?' alert':'')+'"><div class="lbl">'+k+'</div>'+
              '<div class="v">'+v+'</div><div class="n">'+n+'</div></div>';
@@ -640,7 +730,7 @@ button{cursor:pointer}
     document.getElementById("figures").innerHTML =
       fig("Complete", done+"/"+total, (total?Math.round(done/total*100):0)+"% of the project") +
       fig("Overdue", String(late), late ? "needs chasing today" : "all clear", late>0) +
-      fig("Balance gap", Math.round(gap)+"%", gap<10 ? "evenly split" : "widest split between members") +
+      fig("Balance gap", Math.round(gap)+"%", span) +
       fig("Members", String(state.members.length), "equal share is "+(state.members.length?Math.round(100/state.members.length):0)+"%");
   }
 
@@ -695,34 +785,6 @@ button{cursor:pointer}
     }).join("");
   }
 
-  function renderScale(){
-    var rows = shares();
-    var even = state.members.length ? 100/state.members.length : 0;
-    document.getElementById("axisnote").textContent =
-      state.members.length ? "Dashed line = equal share (" + Math.round(even) + "%)" : "";
-    if(!state.members.length){
-      document.getElementById("scale").innerHTML = '<li class="blank">Add group members to see how the work splits.</li>';
-      return;
-    }
-    var any = rows.some(function(r){ return r.grand>0; });
-    document.getElementById("scale").innerHTML = rows.map(function(r){
-      var w = even>0 ? Math.min(100,(r.pct/(even*2))*100) : 0;
-      var cls="", delta="not started";
-      if(any){
-        var d = r.pct - even;
-        if(d > 2){ cls="above"; delta="+"+Math.round(d)+" pts above equal"; }
-        else if(d < -2){ cls="below"; delta=Math.round(d)+" pts below equal"; }
-        else { delta="on the line"; }
-      }
-      return '<li class="sr '+cls+'">'+
-        '<div><div class="nm">'+esc(r.m.name)+'</div>'+
-        '<div class="sub">'+r.dc+' done · '+r.w+' pts &nbsp;|&nbsp; '+r.oc+' open · '+r.ow+' pts</div></div>'+
-        '<div class="gauge"><div class="fill" style="width:'+w.toFixed(1)+'%"></div><div class="even"></div></div>'+
-        '<div><div class="pct">'+Math.round(r.pct)+'%</div><div class="delta">'+esc(delta)+'</div></div>'+
-      '</li>';
-    }).join("");
-  }
-
   function renderRoster(){
     document.getElementById("chips").innerHTML = state.members.map(function(m){
       return '<span class="chip">'+esc(m.name)+
@@ -766,8 +828,8 @@ button{cursor:pointer}
 
   function render(){
     document.getElementById("projname").value = state.project;
-    renderBalance(); renderNotices(); renderFigures(); renderFilters();
-    renderRows(); renderScale(); renderRoster(); renderLog(); renderTabs();
+    renderNotices(); renderFigures(); renderFilters();
+    renderRows(); renderChart(); renderRoster(); renderLog(); renderTabs();
   }
 
   function setView(v){
@@ -890,6 +952,7 @@ button{cursor:pointer}
     } else fallback();
   });
 
+  bindChartHover();
   state = load();
   if(!state.filter) state.filter = "all";
   document.getElementById("t-due").value = offset(3);
