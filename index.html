@@ -5,11 +5,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Evenly — fair group work, tracked</title>
-<meta name="description" content="Evenly is a group assignment tracker for students: a shared task board, deadline alerts, and a chart of each member's share of the completed work against an equal split.">
+<meta name="description" content="Evenly is a group assignment tracker for students. Pick one of your group projects, then track tasks and deadlines and see each member's share of the completed work against an equal split.">
 <meta name="robots" content="index, follow">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Evenly — fair group work, tracked">
-<meta property="og:description" content="Evenly is a group assignment tracker for students: a shared task board, deadline alerts, and a chart of each member's share of the completed work against an equal split.">
+<meta property="og:description" content="Evenly is a group assignment tracker for students. Pick one of your group projects, then track tasks and deadlines and see each member's share of the completed work against an equal split.">
 <meta name="twitter:card" content="summary">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'><rect width='40' height='40' fill='%23121317'/><rect x='7' y='14' width='26' height='4' fill='%231F3BEB'/><rect x='7' y='23' width='16' height='4' fill='%23FFFFFF'/></svg>">
 
@@ -126,6 +126,52 @@ button{cursor:pointer}
 .btn:hover{border-color:var(--ink-2);color:var(--ink)}
 .btn-solid{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:600}
 .btn-solid:hover{filter:brightness(1.1);color:var(--accent-ink)}
+
+/* ---------- project picker ---------- */
+.app[data-screen="picker"] #projectscreen{display:none}
+.app[data-screen="project"] #picker{display:none}
+.app[data-screen="picker"]{padding-bottom:48px}
+
+.picker{padding-block:6px 0}
+.pickhead{border-top:1px solid var(--ink);padding-block:16px 0;display:flex;justify-content:space-between;align-items:baseline;gap:16px;flex-wrap:wrap}
+.pcards{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:16px;margin-top:18px}
+.pcard{
+  position:relative;display:block;width:100%;text-align:left;font:inherit;color:inherit;
+  background:var(--paper-2);border:1px solid var(--rule);border-radius:3px;
+  padding:20px 20px 17px;transition:border-color .15s ease, transform .15s ease;
+}
+.pcard:hover{border-color:var(--chart);transform:translateY(-2px)}
+.pcard::before{
+  content:"";position:absolute;inset:-1px -1px auto -1px;height:3px;
+  background:var(--chart);opacity:0;transition:opacity .15s ease;
+}
+.pcard:hover::before{opacity:1}
+.pcard .pcourse{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3)}
+.pcard .pname{font-size:19px;font-weight:600;letter-spacing:-.015em;margin-top:7px;line-height:1.25}
+.pcard .pdue{font-family:var(--mono);font-size:11.5px;margin-top:9px;color:var(--ink-2);display:flex;align-items:center;gap:7px}
+.pcard .pdue.late{color:var(--late)}
+.pcard .pdue.soon{color:var(--soon)}
+.pcard .pdue i{width:6px;height:6px;border-radius:50%;background:currentColor;flex:none;font-style:normal}
+.ptrack{height:4px;background:var(--rule-2);margin-top:16px;overflow:hidden}
+.ptrack span{display:block;height:100%;background:var(--chart)}
+.pstats{display:flex;flex-wrap:wrap;gap:4px 16px;margin-top:11px;font-family:var(--mono);font-size:11px;color:var(--ink-3)}
+.pstats b{color:var(--ink);font-weight:600}
+.pstats .warn{color:var(--late)}
+.pwho{margin-top:12px;padding-top:11px;border-top:1px solid var(--rule-2);font-size:11.5px;color:var(--ink-3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+.pcard.new{background:transparent;border-style:dashed;display:flex;align-items:center;justify-content:center;min-height:190px;color:var(--ink-3);font-family:var(--mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase}
+.pcard.new:hover{color:var(--chart)}
+.newform{border:1px solid var(--rule);border-radius:3px;background:var(--paper-2);padding:18px;margin-top:16px;display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1.6fr) minmax(0,1fr) auto;gap:12px;align-items:end}
+.newform[hidden]{display:none}
+
+/* wordmark doubles as the way back out of a project */
+.brandbtn{background:none;border:none;padding:0;display:flex;align-items:baseline;gap:10px;min-width:0;text-align:left}
+.app[data-screen="project"] .brandbtn:hover h1{color:var(--chart)}
+.brandbtn .back{font-family:var(--mono);font-size:11px;color:var(--ink-3);letter-spacing:.06em}
+.app[data-screen="picker"] .brandbtn{cursor:default}
+.app[data-screen="picker"] .brandbtn .back{display:none}
+.app[data-screen="picker"] .projrow{display:none}
+.crumb{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3)}
 
 .secthead{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin-bottom:9px}
 
@@ -321,6 +367,8 @@ button{cursor:pointer}
   .row .meta{display:flex;flex-wrap:wrap;gap:4px 14px;grid-area:2 / 3 / 3 / 5;margin-top:5px}
 }
 @media (max-width:760px){
+  .pcards{grid-template-columns:minmax(0,1fr);gap:12px}
+  .newform{grid-template-columns:minmax(0,1fr)}
   .figures{grid-template-columns:repeat(2,1fr)}
   .fig{padding:13px 12px}
   .fig:nth-child(3){border-left:none;padding-left:0}
@@ -364,13 +412,15 @@ button{cursor:pointer}
 </style>
 </head>
 <body>
-<div class="app" id="app" data-view="board">
+<div class="app" id="app" data-screen="picker" data-view="board">
 
   <header class="mast">
-    <div class="brand">
-      <h1>Evenly</h1>
+    <button class="brandbtn" id="home" type="button">
+      <span class="brand"><h1>Evenly</h1></span>
       <span class="sub">Fair group work, tracked</span>
-    </div>
+      <span class="back">← all projects</span>
+    </button>
+    <span class="crumb" id="crumb"></span>
     <div class="projrow">
       <span class="lbl">Project</span>
       <input id="projname" autocomplete="off" aria-label="Project name">
@@ -378,6 +428,30 @@ button{cursor:pointer}
     </div>
   </header>
 
+  <section class="picker" id="picker">
+    <div class="pickhead">
+      <span class="lbl">Your group projects</span>
+      <span class="lbl" id="picknote"></span>
+    </div>
+    <div class="pcards" id="pcards"></div>
+    <form class="newform" id="newform" hidden>
+      <div class="field">
+        <label class="lbl" for="np-name">Project</label>
+        <input id="np-name" placeholder="e.g. Marketing Case Study" autocomplete="off" required>
+      </div>
+      <div class="field">
+        <label class="lbl" for="np-course">Subject</label>
+        <input id="np-course" placeholder="e.g. FSTM3022 Marketing" autocomplete="off">
+      </div>
+      <div class="field">
+        <label class="lbl" for="np-due">Due</label>
+        <input id="np-due" type="date">
+      </div>
+      <button class="btn btn-solid" type="submit">Create</button>
+    </form>
+  </section>
+
+  <div id="projectscreen">
   <nav class="tabs" id="tabs" role="tablist" aria-label="Sections">
     <button type="button" role="tab" data-view="board" aria-selected="true">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h11"/></svg>
@@ -472,6 +546,8 @@ button{cursor:pointer}
     <ul class="log" id="log"></ul>
   </div>
 
+  </div><!-- /projectscreen -->
+
   <p class="colophon">
     <span>Prototype — FSTM3014 ICT Application Skills</span>
     <span>Saved in this browser; a refresh keeps your data.</span>
@@ -483,7 +559,7 @@ button{cursor:pointer}
 <script>
 (function(){
   "use strict";
-  var KEY = "evenly.v2";
+  var KEY = "evenly.v3";
   var EFFORT = {1:"Light", 2:"Normal", 3:"Heavy"};
 
   function esc(s){
@@ -532,51 +608,91 @@ button{cursor:pointer}
     toast._t = setTimeout(function(){ el.classList.remove("show"); }, 2400);
   }
 
-  function seed(){
-    var names = ["Aisyah Rahman","Lim Wei Jie","Daniel Tan","Priya Nair","Hafiz Omar"];
-    var members = names.map(function(n,i){ return { id:"m"+(i+1), name:n }; });
-    function t(title, mi, due, effort, hoursAgo){
-      var o = { id:uid(), title:title, who:members[mi].id, due:offset(due),
-                effort:effort, done:false, completedAt:null };
-      if(hoursAgo !== undefined){
-        o.done = true;
-        o.completedAt = new Date(Date.now() - hoursAgo*3600000).toISOString();
-      }
+  function blank(name, course, dueOffset){
+    return { id:uid(), project:name, course:course,
+             due: dueOffset===null ? "" : offset(dueOffset),
+             members:[], tasks:[], filter:"all" };
+  }
+  function fill(P, names, rows){
+    P.members = names.map(function(n,i){ return { id:P.id+"-m"+i, name:n }; });
+    P.tasks = rows.map(function(r){
+      var o = { id:uid(), title:r[0], who:P.members[r[1]].id, due:offset(r[2]),
+                effort:r[3], done:false, completedAt:null };
+      if(r.length > 4){ o.done = true; o.completedAt = new Date(Date.now()-r[4]*3600000).toISOString(); }
       return o;
-    }
-    return {
-      project: "Technology Venture Blueprint",
-      members: members,
-      tasks: [
-        t("Executive summary and opening slides", 0, -3, 3, 62),
-        t("Product description section",          1, -2, 2, 50),
-        t("Technology description section",       4, -2, 3, 44),
-        t("Financial plan tables",                4, -1, 2, 20),
-        t("Design the slide template in Canva",   3, -1, 2),
-        t("Market research and analysis",         2,  0, 3),
-        t("Management team and org chart",        3,  1, 2),
-        t("Build the working prototype",          2,  1, 3),
-        t("Record narration for all slides",      0,  2, 3),
-        t("Project milestones and Gantt chart",   1,  2, 1),
-        t("Proofread and run the Turnitin check", 3,  3, 1)
-      ],
-      filter: "all"
-    };
+    });
+    return P;
   }
 
-  var state;
-  function load(){
+  function seedDB(){
+    var a = fill(blank("Technology Venture Blueprint","FSTM3014 ICT Application Skills",0),
+      ["Aisyah Rahman","Lim Wei Jie","Daniel Tan","Priya Nair","Hafiz Omar"], [
+      ["Executive summary and opening slides", 0,-3,3,62],
+      ["Product description section",          1,-2,2,50],
+      ["Technology description section",       4,-2,3,44],
+      ["Financial plan tables",                4,-1,2,20],
+      ["Design the slide template in Canva",   3,-1,2],
+      ["Market research and analysis",         2, 0,3],
+      ["Management team and org chart",        3, 1,2],
+      ["Build the working prototype",          2, 1,3],
+      ["Record narration for all slides",      0, 2,3],
+      ["Project milestones and Gantt chart",   1, 2,1],
+      ["Proofread and run the Turnitin check", 3, 3,1]
+    ]);
+    var b = fill(blank("Gym Database Project","FSTM3054 Basic Computer Concept",6),
+      ["Chen Yu Ting","Nurul Izzah","Daniel Tan","Arjun Raj"], [
+      ["Define the problem and business rules", 0,-6,3,150],
+      ["Entity relationship diagram",           1,-4,3,120],
+      ["Data dictionary for all six tables",    3,-3,2,96],
+      ["Build and populate the tables",         2,-1,3,30],
+      ["Establish the table relationships",     2, 1,2],
+      ["Write the seven SQL queries",           0, 3,3],
+      ["Screenshot every query output",         1, 4,1],
+      ["Compile the report and cover page",     3, 5,2]
+    ]);
+    var c = fill(blank("Mechanics Lab Report","FSTM3094 Physics 1",13),
+      ["Hafiz Omar","Aisyah Rahman","Arjun Raj"], [
+      ["Run the pendulum experiment",     0,-2,3,70],
+      ["Record and tabulate the readings", 1,-1,2,40],
+      ["Plot the graphs and find the gradient", 1, 4,2],
+      ["Error and uncertainty analysis",  0, 6,3],
+      ["Discussion and conclusion",       2, 9,2],
+      ["Format to the lab report template", 2,11,1]
+    ]);
+    return { current:null, projects:[a,b,c] };
+  }
+
+  var DB, state;
+
+  function loadDB(){
     try{
       var raw = localStorage.getItem(KEY);
       if(raw){
-        var p = JSON.parse(raw);
-        if(p && Array.isArray(p.members) && Array.isArray(p.tasks)) return p;
+        var d = JSON.parse(raw);
+        if(d && Array.isArray(d.projects) && d.projects.length) return d;
       }
-    }catch(e){ /* blocked or private storage — fall back to the demo */ }
-    return seed();
+    }catch(e){ /* blocked or private storage */ }
+    try{
+      // carry over a board saved by the single-project version
+      var old = localStorage.getItem("evenly.v2");
+      if(old){
+        var o = JSON.parse(old);
+        if(o && Array.isArray(o.members) && Array.isArray(o.tasks)){
+          o.id = uid(); o.course = o.course || ""; o.due = o.due || offset(7);
+          var db = seedDB();
+          db.projects.unshift(o);
+          return db;
+        }
+      }
+    }catch(e){}
+    return seedDB();
   }
   function save(){
-    try{ localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){}
+    try{ localStorage.setItem(KEY, JSON.stringify(DB)); }catch(e){}
+  }
+  function projectById(id){
+    for(var i=0;i<DB.projects.length;i++) if(DB.projects[i].id===id) return DB.projects[i];
+    return null;
   }
 
   function member(id){
@@ -592,7 +708,8 @@ button{cursor:pointer}
     if(d <= 2) return "soon";
     return "open";
   }
-  function shares(){
+  function shares(){ return sharesOf(state); }
+  function sharesOf(state){
     var done={}, open={}, dc={}, oc={}, grand=0;
     state.members.forEach(function(m){ done[m.id]=0; open[m.id]=0; dc[m.id]=0; oc[m.id]=0; });
     state.tasks.forEach(function(t){
@@ -813,6 +930,82 @@ button{cursor:pointer}
     }).join("");
   }
 
+  /* ---------- project picker ---------- */
+  function statsOf(P){
+    var total = P.tasks.length;
+    var done = P.tasks.filter(function(t){ return t.done; }).length;
+    var late = P.tasks.filter(function(t){ return status(t)==="late"; }).length;
+    var rows = sharesOf(P).filter(function(r){ return r.grand > 0; });
+    var gap = 0;
+    if(rows.length){
+      var v = rows.map(function(r){ return r.pct; });
+      gap = Math.max.apply(null,v) - Math.min.apply(null,v);
+    }
+    return { total:total, done:done, late:late, gap:Math.round(gap),
+             pct: total ? Math.round(done/total*100) : 0 };
+  }
+  function dueWord(due){
+    var d = days(due);
+    if(d === null) return { cls:"", txt:"No deadline set" };
+    if(d < 0)   return { cls:"late", txt:Math.abs(d)+" day"+(Math.abs(d)>1?"s":"")+" overdue" };
+    if(d === 0) return { cls:"soon", txt:"Due today" };
+    if(d <= 3)  return { cls:"soon", txt:"Due in "+d+" day"+(d>1?"s":"")+" · "+shortDate(due) };
+    return { cls:"", txt:"Due "+shortDate(due)+" · "+d+" days away" };
+  }
+
+  function renderPicker(){
+    var n = DB.projects.length;
+    var urgent = DB.projects.filter(function(P){
+      var d = days(P.due); return d !== null && d <= 3;
+    }).length;
+    document.getElementById("picknote").textContent =
+      n + " project" + (n===1?"":"s") +
+      (urgent ? " · " + urgent + (urgent===1 ? " needs" : " need") + " attention" : "");
+
+    document.getElementById("pcards").innerHTML = DB.projects.map(function(P){
+      var st = statsOf(P), dw = dueWord(P.due);
+      var who = P.members.map(function(m){ return firstName(m.name); }).join(", ") || "No members yet";
+      return '<button class="pcard" type="button" data-open="'+P.id+'">'+
+        '<div class="pcourse">'+esc(P.course || "No subject")+'</div>'+
+        '<div class="pname">'+esc(P.project)+'</div>'+
+        '<div class="pdue '+dw.cls+'"><i></i>'+esc(dw.txt)+'</div>'+
+        '<div class="ptrack"><span style="width:'+st.pct+'%"></span></div>'+
+        '<div class="pstats">'+
+          '<span><b>'+st.done+'/'+st.total+'</b> done</span>'+
+          (st.late ? '<span class="warn"><b>'+st.late+'</b> overdue</span>' : '')+
+          '<span>gap <b>'+st.gap+'%</b></span>'+
+        '</div>'+
+        '<div class="pwho">'+P.members.length+' members · '+esc(who)+'</div>'+
+      '</button>';
+    }).join("") +
+    '<button class="pcard new" type="button" id="newcard">+ New project</button>';
+  }
+
+  function paint(){
+    var app = document.getElementById("app");
+    if(state){
+      app.setAttribute("data-screen","project");
+      document.getElementById("crumb").textContent = state.course || "";
+      render();
+    } else {
+      app.setAttribute("data-screen","picker");
+      document.getElementById("crumb").textContent = "";
+      renderPicker();
+    }
+  }
+  function openProject(id){
+    state = projectById(id);
+    DB.current = state ? id : null;
+    save(); paint();
+    window.scrollTo({ top:0 });
+  }
+  function goHome(){
+    state = null; DB.current = null;
+    document.getElementById("newform").hidden = true;
+    save(); paint();
+    window.scrollTo({ top:0 });
+  }
+
   function renderTabs(){
     var open = state.tasks.filter(function(t){ return !t.done; }).length;
     var done = state.tasks.filter(function(t){ return t.done; }).length;
@@ -933,7 +1126,39 @@ button{cursor:pointer}
   });
 
   document.getElementById("reset").addEventListener("click", function(){
-    state = seed(); save(); render(); toast("Demo data restored");
+    DB = seedDB(); state = null; save(); paint();
+    toast("Demo data restored");
+  });
+
+  document.getElementById("home").addEventListener("click", function(){
+    if(state) goHome();
+  });
+
+  document.getElementById("pcards").addEventListener("click", function(e){
+    var card = e.target.closest("[data-open]");
+    if(card){ openProject(card.getAttribute("data-open")); return; }
+    if(e.target.closest("#newcard")){
+      var f = document.getElementById("newform");
+      f.hidden = !f.hidden;
+      if(!f.hidden){
+        document.getElementById("np-due").value = offset(14);
+        document.getElementById("np-name").focus();
+      }
+    }
+  });
+
+  document.getElementById("newform").addEventListener("submit", function(e){
+    e.preventDefault();
+    var name = document.getElementById("np-name").value.trim();
+    if(!name) return;
+    var P = blank(name, document.getElementById("np-course").value.trim(), null);
+    P.due = document.getElementById("np-due").value || "";
+    DB.projects.push(P);
+    document.getElementById("np-name").value = "";
+    document.getElementById("np-course").value = "";
+    document.getElementById("newform").hidden = true;
+    save(); openProject(P.id);
+    toast("Project created — add your group members next");
   });
 
   document.getElementById("copyreport").addEventListener("click", function(){
@@ -953,10 +1178,11 @@ button{cursor:pointer}
   });
 
   bindChartHover();
-  state = load();
-  if(!state.filter) state.filter = "all";
+  DB = loadDB();
+  state = DB.current ? projectById(DB.current) : null;
+  if(state && !state.filter) state.filter = "all";
   document.getElementById("t-due").value = offset(3);
-  render();
+  paint();
 })();
 </script>
 </body>
