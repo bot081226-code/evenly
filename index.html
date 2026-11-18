@@ -5,11 +5,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Evenly — fair group work, tracked</title>
-<meta name="description" content="Evenly is a group assignment tracker for students. Pick one of your group projects, then track tasks and deadlines and see each member's share of the completed work against an equal split.">
+<meta name="description" content="Evenly is a group assignment tracker for students. Pick one of your group projects, then track tasks and deadlines and see each member's share of the completed work, weighted by effort, against an equal split.">
 <meta name="robots" content="index, follow">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Evenly — fair group work, tracked">
-<meta property="og:description" content="Evenly is a group assignment tracker for students. Pick one of your group projects, then track tasks and deadlines and see each member's share of the completed work against an equal split.">
+<meta property="og:description" content="Evenly is a group assignment tracker for students. Pick one of your group projects, then track tasks and deadlines and see each member's share of the completed work, weighted by effort, against an equal split.">
 <meta name="twitter:card" content="summary">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'><rect width='40' height='40' fill='%23121317'/><rect x='7' y='14' width='26' height='4' fill='%231F3BEB'/><rect x='7' y='23' width='16' height='4' fill='%23FFFFFF'/></svg>">
 
@@ -228,6 +228,11 @@ button{cursor:pointer}
 
 /* ---------- table view (also the accessible fallback for the chart) ---------- */
 .tblwrap{overflow-x:auto;margin-top:26px}
+.chartnote{
+  margin:16px 0 0;max-width:62ch;font-size:12.5px;line-height:1.6;color:var(--ink-2);
+  border-left:2px solid var(--rule);padding-left:12px;
+}
+.chartnote b{color:var(--ink);font-weight:600}
 .tbl{width:100%;min-width:440px;border-collapse:collapse}
 .tbl caption{text-align:left;padding-bottom:9px}
 .tbl th,.tbl td{text-align:right;padding:9px 0;border-bottom:1px solid var(--rule-2);font-size:13px}
@@ -506,9 +511,9 @@ button{cursor:pointer}
       <div class="field">
         <label class="lbl" for="t-effort">Effort</label>
         <select id="t-effort">
-          <option value="1">Light</option>
-          <option value="2" selected>Normal</option>
-          <option value="3">Heavy</option>
+          <option value="1">Light · 1 pt</option>
+          <option value="2" selected>Normal · 2 pts</option>
+          <option value="3">Heavy · 3 pts</option>
         </select>
       </div>
       <button class="btn btn-solid" type="submit">Add task</button>
@@ -538,6 +543,9 @@ button{cursor:pointer}
       <div class="names" id="names"></div>
       <div class="tip" id="tip"></div>
     </div>
+    <p class="chartnote">Share is weighted by <b>effort points</b>, not by how many
+    tasks each person ticked off. Two people can finish the same number of tasks and
+    still hold a different share — one heavy task counts for three light ones.</p>
     <div class="tblwrap">
       <table class="tbl" id="tbl">
         <caption class="lbl">The same figures as a table</caption>
