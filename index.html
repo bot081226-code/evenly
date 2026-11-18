@@ -165,13 +165,24 @@ button{cursor:pointer}
 .newform[hidden]{display:none}
 
 /* wordmark doubles as the way back out of a project */
+.mastleft{display:flex;align-items:center;gap:20px;flex-wrap:wrap;min-width:0}
 .brandbtn{background:none;border:none;padding:0;display:flex;align-items:baseline;gap:10px;min-width:0;text-align:left}
 .app[data-screen="project"] .brandbtn:hover h1{color:var(--chart)}
-.brandbtn .back{font-family:var(--mono);font-size:11px;color:var(--ink-3);letter-spacing:.06em}
 .app[data-screen="picker"] .brandbtn{cursor:default}
-.app[data-screen="picker"] .brandbtn .back{display:none}
 .app[data-screen="picker"] .projrow{display:none}
-.crumb{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3)}
+.app[data-screen="picker"] .switcher{display:none}
+
+.switcher{
+  display:flex;align-items:center;gap:10px;background:var(--paper-2);
+  border:1px solid var(--rule);border-radius:3px;padding:7px 14px 7px 11px;
+  transition:border-color .15s ease, background .15s ease;
+}
+.switcher:hover{border-color:var(--chart);background:var(--paper)}
+.switcher .arrow{font-size:15px;color:var(--ink-2);line-height:1}
+.switcher:hover .arrow{color:var(--chart)}
+.swtext{display:flex;flex-direction:column;align-items:flex-start;gap:2px;min-width:0}
+.swlbl{font-size:13px;font-weight:600;letter-spacing:-.01em}
+.crumb{font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);white-space:nowrap}
 
 .secthead{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin-bottom:9px}
 
@@ -231,10 +242,11 @@ button{cursor:pointer}
 .tabs{display:flex;gap:0;border-top:1px solid var(--ink);border-bottom:1px solid var(--rule)}
 .tabs button{
   background:none;border:none;border-bottom:2px solid transparent;
-  padding:13px 2px;margin-right:26px;
-  font-family:var(--mono);font-size:11.5px;font-weight:500;letter-spacing:.09em;
+  padding:15px 2px;margin-right:30px;
+  font-family:var(--mono);font-size:13px;font-weight:500;letter-spacing:.1em;
   text-transform:uppercase;color:var(--ink-3);position:relative;
 }
+.tabs button[aria-selected="true"]{font-weight:600}
 .tabs button:hover{color:var(--ink)}
 .tabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent)}
 .tabs svg{display:none}
@@ -379,6 +391,8 @@ button{cursor:pointer}
   .sr{grid-template-columns:minmax(0,1fr) auto;gap:4px 12px}
   .sr .gauge{grid-column:1 / -1;margin-top:6px}
   .mast{padding-block:18px 12px}
+  .mastleft{gap:12px;flex:1 1 100%}
+  .switcher{flex:1 1 100%}
   .projrow{flex:1 1 100%}
   .projrow input{flex:1;width:auto}
   /* a 250px plot is too tall once the bottom bar is in play */
@@ -415,12 +429,16 @@ button{cursor:pointer}
 <div class="app" id="app" data-screen="picker" data-view="board">
 
   <header class="mast">
+    <div class="mastleft">
     <button class="brandbtn" id="home" type="button">
       <span class="brand"><h1>Evenly</h1></span>
       <span class="sub">Fair group work, tracked</span>
-      <span class="back">← all projects</span>
     </button>
-    <span class="crumb" id="crumb"></span>
+    <button class="switcher" id="switch" type="button">
+      <span class="arrow">←</span>
+      <span class="swtext"><span class="swlbl">All projects</span><span class="crumb" id="crumb"></span></span>
+    </button>
+    </div>
     <div class="projrow">
       <span class="lbl">Project</span>
       <input id="projname" autocomplete="off" aria-label="Project name">
@@ -672,20 +690,22 @@ button{cursor:pointer}
         if(d && Array.isArray(d.projects) && d.projects.length) return d;
       }
     }catch(e){ /* blocked or private storage */ }
+    var db = seedDB();
     try{
-      // carry over a board saved by the single-project version
+      // carry over a board saved by the single-project version, but only if it is
+      // not just the old demo data under a name one of the seeds already uses
       var old = localStorage.getItem("evenly.v2");
       if(old){
         var o = JSON.parse(old);
-        if(o && Array.isArray(o.members) && Array.isArray(o.tasks)){
+        var dup = o && db.projects.some(function(P){ return P.project === o.project; });
+        if(o && Array.isArray(o.members) && Array.isArray(o.tasks) && !dup){
           o.id = uid(); o.course = o.course || ""; o.due = o.due || offset(7);
-          var db = seedDB();
           db.projects.unshift(o);
-          return db;
         }
+        localStorage.removeItem("evenly.v2");
       }
     }catch(e){}
-    return seedDB();
+    return db;
   }
   function save(){
     try{ localStorage.setItem(KEY, JSON.stringify(DB)); }catch(e){}
@@ -1133,6 +1153,7 @@ button{cursor:pointer}
   document.getElementById("home").addEventListener("click", function(){
     if(state) goHome();
   });
+  document.getElementById("switch").addEventListener("click", goHome);
 
   document.getElementById("pcards").addEventListener("click", function(e){
     var card = e.target.closest("[data-open]");
